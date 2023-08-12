@@ -161,10 +161,15 @@ def read_json_response_with_timeout(timeout_seconds) -> Any:
 def send_request_and_wait_for_response(action: dict, timeout_seconds: float = 3.0):
     message = {"version": 1, "type": "request", "action": action}
     json_message = json.dumps(message)
-    with clip.revert():
-        clip.set_text(json_message)
-        actions.user.rango_type_hotkey()
-        response = read_json_response_with_timeout(timeout_seconds)
+
+    try:
+        actions.user.clipboard_manager_stop_updating()
+        with clip.revert():
+            clip.set_text(json_message)
+            actions.user.rango_type_hotkey()
+            response = read_json_response_with_timeout(timeout_seconds)
+    finally:
+        actions.user.clipboard_manager_resume_updating()
 
     response_actions = response.get("actions")
 
