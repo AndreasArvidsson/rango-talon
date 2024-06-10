@@ -109,7 +109,7 @@ MINIMUM_SLEEP_TIME_SECONDS = 0.0005
 def send_request_timed_out():
     message = {"version": 1, "type": "request", "action": {"type": "requestTimedOut"}}
     json_message = json.dumps(message)
-    clip.set_text(json_message)
+    actions.user.clip_set_transient_text(json_message)
     actions.user.rango_type_hotkey()
     actions.sleep("200ms")
 
@@ -164,14 +164,10 @@ def send_request_and_wait_for_response(action: dict, timeout_seconds: float = 3.
     message = {"version": 1, "type": "request", "action": action}
     json_message = json.dumps(message)
 
-    try:
-        actions.user.clipboard_manager_stop_updating()
-        with clip.revert():
-            clip.set_text(json_message)
-            actions.user.rango_type_hotkey()
-            response = read_json_response_with_timeout(timeout_seconds)
-    finally:
-        actions.user.clipboard_manager_resume_updating()
+    with clip.revert():
+        actions.user.clip_set_transient_text(json_message)
+        actions.user.rango_type_hotkey()
+        response = read_json_response_with_timeout(timeout_seconds)
 
     response_actions = response.get("actions")
 
